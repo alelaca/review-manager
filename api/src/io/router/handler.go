@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"review-manager/api/src/customerror"
 	"review-manager/api/src/entities"
 	"review-manager/api/src/environment"
 	reviews "review-manager/api/src/services/reviews/interactor"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -92,6 +94,44 @@ func findReviewByOrderID(env environment.Environment) gin.HandlerFunc {
 	}
 }
 
+func findReviewByShopID(env environment.Environment) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		reviewService := reviews.ReviewsService{
+			Repository: env.LocalRepository,
+		}
+
+		shopIDParam := c.Param("shopID")
+
+		shopID, err := strconv.ParseInt(shopIDParam, 10, 64)
+		if err != nil {
+			abortWithCustomError(c, http.StatusBadRequest, fmt.Errorf("invalid order id '%v', it needs to be a number", shopIDParam))
+			return
+		}
+
+		dateFromStr := c.Query("date_from")
+		dateFrom, err := getDate(dateFromStr)
+		if err != nil {
+			abortWithCustomError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+		dateToStr := c.Query("date_to")
+		dateTo, err := getDate(dateToStr)
+		if err != nil {
+			abortWithCustomError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+		reviews, err := reviewService.GetReviewsForStore(shopID, *dateFrom, *dateTo)
+		if err != nil {
+			abortWithCustomError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, reviews)
+	}
+}
+
 func validateReviewParameters(review entities.Review) error {
 
 	if review.Rate == nil || review.OrderID == nil || review.ShopID == nil || review.UserID == nil {
@@ -99,4 +139,14 @@ func validateReviewParameters(review entities.Review) error {
 	}
 
 	return nil
+}
+
+func getDate(dateStr string) (*time.Time, error) {
+	date, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		customerror.WrapWithStatusCode(err, http.StatusBadRequest, fmt.Sprintf("invalid date format, it needs to follow %v, got %v", time.RFC3339, dateStr))
+	}
+
+	return &date, nil
+
 }
