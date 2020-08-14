@@ -11,22 +11,7 @@ import (
 )
 
 type ReviewsService struct {
-	Repository interfaces.ReviewsRepositoryInterface
-}
-
-// FindReviewByID gets a review from repository given an id
-func (reviewService ReviewsService) FindReviewByID(id int64) (*entities.Review, error) {
-	review, err := reviewService.Repository.GetReview(id)
-
-	if err != nil {
-		return nil, customerror.WrapWithStatusCode(err, http.StatusInternalServerError, fmt.Sprintf("error finding review with id '%v'", id))
-	}
-
-	if review == nil {
-		return nil, customerror.WrapWithStatusCode(nil, http.StatusNotFound, fmt.Sprintf("review with id '%v' not found", id))
-	}
-
-	return review, nil
+	Repository interfaces.ReviewsRepository
 }
 
 // CreateReview creates a new review in repository
@@ -42,6 +27,20 @@ func (reviewService ReviewsService) CreateReview(review entities.Review) (*int64
 	review.DateLastUpdated = &now
 
 	return reviewService.Repository.CreateReview(review)
+}
+
+// GetReviewForOrder gets a review given order id
+func (reviewService ReviewsService) GetReviewForOrder(orderID int64) (*entities.Review, error) {
+	review, err := reviewService.Repository.GetReviewForOrder(orderID)
+	if err != nil {
+		return nil, customerror.WrapWithStatusCode(err, http.StatusInternalServerError, fmt.Sprintf("error finding review by order id '%v'", orderID))
+	}
+
+	if review == nil {
+		return nil, customerror.WrapWithStatusCode(nil, http.StatusNotFound, fmt.Sprintf("review by order id '%v' not found", orderID))
+	}
+
+	return review, nil
 }
 
 func (reviewService ReviewsService) isValidReview(review entities.Review) error {

@@ -19,10 +19,6 @@ func InitializeLocalRepository() LocalRepository {
 	}
 }
 
-func (repo LocalRepository) GetReview(id int64) (*entities.Review, error) {
-	return repo.mapRepository[id], nil
-}
-
 func (repo LocalRepository) CreateReview(review entities.Review) (*int64, error) {
 	review.ID = new(int64)
 	*review.ID = *repo.nextID
@@ -43,4 +39,14 @@ func (repo LocalRepository) ExistsReviewForOrder(orderID int64) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (repo LocalRepository) GetReviewForOrder(orderID int64) (*entities.Review, error) {
+	for _, review := range repo.mapRepository {
+		if *review.OrderID == orderID {
+			return review, nil
+		}
+	}
+
+	return nil, nil
 }
