@@ -8,18 +8,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Initializes router configuration with endpoints
+// InitializeRouter configuration with endpoints
 func InitializeRouter(env environment.Environment) {
 
 	router := gin.Default()
 
 	group := router.Group("/api/v1")
 	{
-		group.GET("/ping", ping)
-
-		group.GET("/reviews/:id", findReviewByID(env))
-
 		group.POST("/reviews", createReview(env))
+
+		group.GET("/reviews/orders/:orderID", findReviewByOrderID(env))
 	}
 
 	router.Run()

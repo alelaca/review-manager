@@ -13,34 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ping(c *gin.Context) {
-	c.JSON(http.StatusOK, "ping success")
-}
-
-func findReviewByID(env environment.Environment) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		reviewService := reviews.ReviewsService{
-			Repository: env.LocalRepository,
-		}
-
-		idStr := c.Param("id")
-
-		id, err := strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			abortWithCustomError(c, http.StatusBadRequest, fmt.Errorf("invalid review id '%v', it needs to be a number", idStr))
-			return
-		}
-
-		review, err := reviewService.FindReviewByID(id)
-		if err != nil {
-			abortWithCustomError(c, http.StatusInternalServerError, err)
-			return
-		}
-
-		c.JSON(http.StatusOK, review)
-	}
-}
-
 func createReview(env environment.Environment) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		reviewService := reviews.ReviewsService{
@@ -69,6 +41,30 @@ func createReview(env environment.Environment) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusCreated, gin.H{"id": reviewID})
+	}
+}
+
+func findReviewByOrderID(env environment.Environment) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		reviewService := reviews.ReviewsService{
+			Repository: env.LocalRepository,
+		}
+
+		orderIDParam := c.Param("orderID")
+
+		orderID, err := strconv.ParseInt(orderIDParam, 10, 64)
+		if err != nil {
+			abortWithCustomError(c, http.StatusBadRequest, fmt.Errorf("invalid order id '%v', it needs to be a number", orderIDParam))
+			return
+		}
+
+		review, err := reviewService.GetReviewForOrder(orderID)
+		if err != nil {
+			abortWithCustomError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, review)
 	}
 }
 

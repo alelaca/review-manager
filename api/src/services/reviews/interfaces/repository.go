@@ -3,11 +3,11 @@ package interfaces
 
 import "review-manager/api/src/entities"
 
-// ReviewsRepositoryInterface defines all interactions between review service and IO operations
-type ReviewsRepositoryInterface interface {
-	GetReview(id int64) (*entities.Review, error)
-
+// ReviewsRepository defines all interactions between review service and IO operations
+type ReviewsRepository interface {
 	CreateReview(review entities.Review) (*int64, error)
+
+	GetReviewForOrder(orderID int64) (*entities.Review, error)
 
 	ExistsReviewForOrder(orderID int64) (bool, error)
 }
