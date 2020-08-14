@@ -20,6 +20,8 @@ func InitializeRouter(env environment.Environment) {
 		group.DELETE("/reviews/:id", deleteReview(env))
 
 		group.GET("/reviews/orders/:orderID", findReviewByOrderID(env))
+
+		group.GET("/reviews/shops/:shopID", findReviewByShopID(env))
 	}
 
 	router.Run()

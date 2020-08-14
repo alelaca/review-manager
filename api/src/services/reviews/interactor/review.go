@@ -22,9 +22,12 @@ func (reviewService ReviewsService) CreateReview(review entities.Review) (*int64
 		return nil, err
 	}
 
+	initDeleted := false
+
 	now := time.Now()
 	review.DateCreated = &now
 	review.DateLastUpdated = &now
+	review.Deleted = &initDeleted
 
 	return reviewService.Repository.CreateReview(review)
 }
@@ -43,8 +46,22 @@ func (reviewService ReviewsService) GetReviewForOrder(orderID int64) (*entities.
 	return review, nil
 }
 
+// DeleteReview deletes the review logically
 func (reviewService ReviewsService) DeleteReview(id int64) error {
-	return reviewService.Repository.DeleteReview(id)
+	deleted, err := reviewService.Repository.DeleteReview(id)
+	if err != nil {
+		return err
+	}
+
+	if !deleted {
+		return customerror.WrapWithStatusCode(nil, http.StatusNotFound, fmt.Sprintf("review id '%v' doesnt exists"))
+	}
+
+	return nil
+}
+
+func (reviewService ReviewsService) GetReviewsForStore(shopID int64, dateFrom, dateTo time.Time) ([]entities.Review, error) {
+	return reviewService.Repository.GetReviewsForStore(shopID, dateFrom, dateTo)
 }
 
 func (reviewService ReviewsService) isValidReview(review entities.Review) error {

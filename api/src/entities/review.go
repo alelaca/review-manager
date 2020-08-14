@@ -13,4 +13,5 @@ type Review struct {
 	ShopID          *int64     `json:"shop_id"`
 	DateCreated     *time.Time `json:"date_created"`
 	DateLastUpdated *time.Time `json:"date_last_updated"`
+	Deleted         *bool      `json:"deleted"`
 }

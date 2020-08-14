@@ -3,6 +3,7 @@ package repository
 import (
 	"log"
 	"review-manager/api/src/entities"
+	"time"
 )
 
 type LocalRepository struct {
@@ -31,16 +32,12 @@ func (repo LocalRepository) CreateReview(review entities.Review) (*int64, error)
 	return review.ID, nil
 }
 
-func (repo LocalRepository) DeleteReview(id int64) error {
-	delete(repo.mapRepository, id)
-	return nil
-}
+func (repo LocalRepository) DeleteReview(id int64) (bool, error) {
+	review := repo.mapRepository[id]
 
-func (repo LocalRepository) ExistsReviewForOrder(orderID int64) (bool, error) {
-	for _, review := range repo.mapRepository {
-		if *review.OrderID == orderID {
-			return true, nil
-		}
+	if review != nil {
+		*review.Deleted = true
+		return true, nil
 	}
 
 	return false, nil
@@ -54,4 +51,30 @@ func (repo LocalRepository) GetReviewForOrder(orderID int64) (*entities.Review, 
 	}
 
 	return nil, nil
+}
+
+func (repo LocalRepository) GetReviewsForStore(shopID int64, dateFrom, dateTo time.Time) ([]entities.Review, error) {
+	reviews := []entities.Review{}
+
+	for _, review := range repo.mapRepository {
+		if *review.ShopID == shopID && !*review.Deleted && isDateInRange(*review.DateCreated, dateFrom, dateTo) {
+			reviews = append(reviews, *review)
+		}
+	}
+
+	return reviews, nil
+}
+
+func (repo LocalRepository) ExistsReviewForOrder(orderID int64) (bool, error) {
+	for _, review := range repo.mapRepository {
+		if *review.OrderID == orderID {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func isDateInRange(date, dateFrom, dateTo time.Time) bool {
+	return date.Equal(dateFrom) || date.Equal(dateTo) || (date.Before(dateTo) && date.After(dateFrom))
 }
