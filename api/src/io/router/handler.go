@@ -44,6 +44,30 @@ func createReview(env environment.Environment) gin.HandlerFunc {
 	}
 }
 
+func deleteReview(env environment.Environment) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		reviewService := reviews.ReviewsService{
+			Repository: env.LocalRepository,
+		}
+
+		idParam := c.Param("id")
+
+		id, err := strconv.ParseInt(idParam, 10, 64)
+		if err != nil {
+			abortWithCustomError(c, http.StatusBadRequest, fmt.Errorf("invalid review id '%v', it needs to be a number", idParam))
+			return
+		}
+
+		err = reviewService.DeleteReview(id)
+		if err != nil {
+			abortWithCustomError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("review with id '%v' deleted", id)})
+	}
+}
+
 func findReviewByOrderID(env environment.Environment) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		reviewService := reviews.ReviewsService{

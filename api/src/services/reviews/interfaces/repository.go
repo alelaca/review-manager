@@ -9,5 +9,7 @@ type ReviewsRepository interface {
 
 	GetReviewForOrder(orderID int64) (*entities.Review, error)
 
+	DeleteReview(id int64) error
+
 	ExistsReviewForOrder(orderID int64) (bool, error)
 }
