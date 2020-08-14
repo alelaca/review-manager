@@ -31,6 +31,11 @@ func (repo LocalRepository) CreateReview(review entities.Review) (*int64, error)
 	return review.ID, nil
 }
 
+func (repo LocalRepository) DeleteReview(id int64) error {
+	delete(repo.mapRepository, id)
+	return nil
+}
+
 func (repo LocalRepository) ExistsReviewForOrder(orderID int64) (bool, error) {
 	for _, review := range repo.mapRepository {
 		if *review.OrderID == orderID {

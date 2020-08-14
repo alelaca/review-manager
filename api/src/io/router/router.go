@@ -17,6 +17,8 @@ func InitializeRouter(env environment.Environment) {
 	{
 		group.POST("/reviews", createReview(env))
 
+		group.DELETE("/reviews/:id", deleteReview(env))
+
 		group.GET("/reviews/orders/:orderID", findReviewByOrderID(env))
 	}
 

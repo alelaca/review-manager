@@ -43,6 +43,10 @@ func (reviewService ReviewsService) GetReviewForOrder(orderID int64) (*entities.
 	return review, nil
 }
 
+func (reviewService ReviewsService) DeleteReview(id int64) error {
+	return reviewService.Repository.DeleteReview(id)
+}
+
 func (reviewService ReviewsService) isValidReview(review entities.Review) error {
 	if review.OrderID == nil {
 		return customerror.WrapWithStatusCode(nil, http.StatusBadRequest, fmt.Sprintf("Order id cant be null"))
